@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>高二期末数学随机刷题系统</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<style>
+/* 页面整体 */
+body {
+    margin:0;
+    font-family:"Microsoft YaHei", Arial, sans-serif;
+    background:#f0f2f5;
+}
+.app {
+    max-width:480px;
+    margin:auto;
+    background:#fff;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 8px rgba(0,0,0,0.1);
+}
+.header {
+    background:#4CAF50;
+    color:#fff;
+    padding:15px 10px;
+    text-align:center;
+    font-size:18px;
+    font-weight:bold;
+}
+.content {
+    flex:1;
+    padding:15px 10px;
+}
+.question {
+    font-size:18px;
+    margin-bottom:15px;
+    line-height:1.6;
+}
+.option {
+    background:#f7f7f7;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+}
+.option input[type="radio"] {
+    margin-right:10px;
+}
+.option.selected {
+    background:#d1eaff;
+}
+.footer {
+    display:flex;
+    border-top:1px solid #ddd;
+}
+.footer button {
+    flex:1;
+    padding:14px 0;
+    border:none;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+}
+.prev { background:#ddd; color:#333; }
+.prev:active { background:#ccc; }
+.submit { background:#4CAF50; color:#fff; }
+.submit:active { background:#3e8e41; }
+.next { background:#2196F3; color:#fff; }
+.next:active { background:#1769aa; }
+.result {
+    margin-top:12px;
+    font-weight:bold;
+    font-size:16px;
+}
+
+/* 响应式适配手机 */
+@media only screen and (max-width:480px){
+    .question { font-size:17px; }
+    .option { font-size:15px; padding:10px; }
+    .footer button { font-size:15px; padding:12px 0; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+    <div class="header" id="progress"></div>
+    <div class="content">
+        <div class="question" id="question"></div>
+        <div id="options"></div>
+        <div class="result" id="result"></div>
+    </div>
+    <div class="footer">
+        <button class="prev" onclick="prevQ()">上一题</button>
+        <button class="submit" onclick="submitQ()">提交</button>
+        <button class="next" onclick="nextQ()">下一题</button>
+    </div>
+</div>
+
+<script>
+/* ===== 题库 ===== */
+const bank = [
+/* 保留你原来的题库内容，这里省略演示 */
+{t:"c",q:"向量 a=(1,1)，b=(1,-1)，则 a·b 等于？",o:["2","-2","0","1"],a:"0"},
+{t:"c",q:"空间中，过平面外一点有多少条直线与已知平面平行？",o:["无数","1","2","0"],a:"无数"},
+{t:"c",q:"椭圆 x²/9 + y²/25 = 1 的焦点在？",o:["x轴","y轴","原点","无法确定"],a:"y轴"},
+{t:"c",q:"复数 (2+i)-(1-i) 等于？",o:["1+2i","1-2i","-1+2i","-1-2i"],a:"1+2i"},
+{t:"c",q:"“x是正数”是“x是整数”的？",o:["必要不充分","充分不必要","充要","既不充分也不必要"],a:"既不充分也不必要"},
+{t:"c",q:"直线与平面所成角的范围是？",o:["(0,π/2)","[0,π/2)","(0,π/2]","[0,π/2]"],a:"[0,π/2]"},
+{t:"c",q:"向量 a=(-2,-3)，则 |a| 等于？",o:["√13","5","√5","13"],a:"√13"},
+{t:"c",q:"抛物线 y²=4x 的顶点坐标是？",o:["(1,0)","(0,1)","(0,0)","(1,1)"],a:"(0,0)"},
+{t:"c",q:"双曲线 y²/3 - x²/2 = 1 的焦点在？",o:["x轴","y轴","原点","无法确定"],a:"y轴"},
+{t:"c",q:"若两个平面都垂直于同一条直线，则这两个平面？",o:["平行","垂直","相交","无法确定"],a:"平行"},
+
+{t:"c",q:"复数 7+2i 的虚部是？",o:["7","2","2i","7i"],a:"2"},
+{t:"c",q:"“a是偶数”是“a能被2整除”的？",o:["必要不充分","充分不必要","充要","既不充分也不必要"],a:"充要"},
+{t:"c",q:"向量 a=(3,-1)，b=(1,3)，则 a·b 等于？",o:["0","6","-6","10"],a:"0"},
+{t:"c",q:"椭圆 x²/25 + y²/16 = 1 的长轴长为？",o:["5","10","4","8"],a:"10"},
+{t:"c",q:"直线 m、n 都与平面 α 垂直，则 m 与 n？",o:["垂直","平行","垂直且异面","垂直且相交"],a:"平行"},
+{t:"c",q:"复数 3−2i 的共轭复数是？",o:["3+2i","−3−2i","−3+2i","2−3i"],a:"3+2i"},
+{t:"c",q:"向量 a=(4,0)，b=(0,3)，则 a·b 等于？",o:["12","7","0","25"],a:"0"},
+{t:"c",q:"空间中两个平面平行，则其中一平面内的直线与另一平面内直线的关系是？",o:["平行","异面","平行或异面","相交"],a:"平行或异面"},
+{t:"c",q:"抛物线 x²=4y 的焦点在？",o:["x轴","y轴","原点","无法确定"],a:"y轴"},
+{t:"c",q:"“x=3”是“x²=9”的？",o:["必要不充分","充分不必要","充要","既不充分也不必要"],a:"充分不必要"},
+
+{t:"c",q:"向量 a=(2,3)，b=(3,2)，则 a·b 等于？",o:["12","13","14","15"],a:"12"},
+{t:"c",q:"双曲线 x² - y² = 1 的渐近线方程是？",o:["y=±x","y=±2x","y=±1/2x","y=±√2x"],a:"y=±x"},
+{t:"c",q:"若直线 a ⟂ 平面 α，直线 b ∥ 平面 α，则 a 与 b？",o:["平行","垂直","异面","相交"],a:"垂直"},
+{t:"c",q:"复数 i² 的值是？",o:["1","-1","i","-i"],a:"-1"},
+{t:"c",q:"向量 a=(1,-2)，b=(-2,4)，则 a 与 b？",o:["垂直","平行","相等","无关系"],a:"平行"},
+{t:"c",q:"直线与平面的位置关系不包括？",o:["平行","相交","异面","线在面内"],a:"异面"},
+{t:"c",q:"椭圆 x²/16 + y²/9 = 1 的短轴长是？",o:["3","6","4","8"],a:"6"},
+{t:"c",q:"“x>0”是“x²>0”的？",o:["必要不充分","充分不必要","充要","既不充分也不必要"],a:"充分不必要"},
+{t:"c",q:"向量 a=(2,1)，则 2a 等于？",o:["(4,2)","(2,2)","(4,1)","(1,2)"],a:"(4,2)"},
+{t:"c",q:"空间中两个平面相交，它们的交线是？",o:["直线","射线","线段","点"],a:"直线"},
+
+{t:"c",q:"抛物线 y²=8x 的焦点坐标是？",o:["(2,0)","(0,2)","(-2,0)","(0,-2)"],a:"(2,0)"},
+{t:"c",q:"复数 z=2−3i 的实部是？",o:["-3","2","-3i","3"],a:"2"},
+{t:"c",q:"向量 a=(-1,3)，则 |a| 等于？",o:["√10","√8","4","10"],a:"√10"},
+{t:"c",q:"下面不能确定一个平面的是？",o:["两条相交直线","两条平行直线","直线和直线外一点","任意三个点"],a:"任意三个点"},
+{t:"c",q:"双曲线 x²/9 - y²/16 = 1 的焦距是？",o:["5","10","4","8"],a:"10"},
+{t:"c",q:"向量 a=(5,0)，则 |a| 等于？",o:["0","5i","5","√5"],a:"5"},
+{t:"c",q:"已知平面 α ∥ 平面 β，直线 a⊂α，则 a 与 β？",o:["平行","相交","在平面内","无法确定"],a:"平行"},
+{t:"c",q:"复数 2i+(1−i) 等于？",o:["1+i","1−i","-1+i","-1−i"],a:"1+i"},
+{t:"c",q:"向量 a=(2,3)，b=(1,2)，则 a+b 等于？",o:["(3,5)","(2,6)","(1,1)","(3,6)"],a:"(3,5)"},
+{t:"c",q:"“两个三角形全等”是“两个三角形相似”的？",o:["必要不充分","充分不必要","充要","既不充分也不必要"],a:"充分不必要"},
+{t:"c",q:"若直线 a∥平面 α，直线 b⊂α，则 a 与 b？",o:["平行","异面","平行或异面","相交"],a:"平行或异面"},
+{t:"c",q:"已知向量 a=(3,4)，则 |a| 等于？",o:["5","7","12","25"],a:"5"},
+{t:"c",q:"空间中两条直线不相交，则它们的关系是？",o:["平行","异面","平行或异面","相交"],a:"平行或异面"},
+{t:"c",q:"向量 a=(1,2)，b=(2,4)，则下列说法正确的是？",o:["a⊥b","a∥b","|a|=|b|","a+b=(3,5)"],a:"a∥b"},
+{t:"c",q:"“a>2”是“a>3”的？",o:["必要不充分","充分不必要","充要","既不充分也不必要"],a:"必要不充分"},
+
+{t:"f",q:"向量 a=(3,-2)，b=(-2,1)，则 a·b = ____。",a:"-8"},
+{t:"f",q:"双曲线 x²/4 - y²/1 = 1 的焦点坐标为 ____。",a:"(±√5,0)"},
+{t:"f",q:"“两个角相等”是“两个角是对顶角”的 ____ 条件。",a:"必要不充分"},
+{t:"f",q:"椭圆 y²/25 + x²/16 = 1 的焦点坐标为 ____。",a:"(0,±3)"},
+{t:"f",q:"复数 (3+2i)+(1−i) = ____。",a:"4+i"},
+{t:"f",q:"空间中，过一点与已知平面垂直的直线有 ____ 条。",a:"1"},
+{t:"f",q:"若一条直线与平面内的 ____ 直线都垂直，则该直线与平面垂直。",a:"任意一条"},
+{t:"f",q:"向量 a=(2,3)，b=(1,2)，则 a+b = ____。",a:"(3,5)"},
+{t:"f",q:"抛物线 x²=16y 的对称轴是 ____ 轴。",a:"y"},
+{t:"f",q:"双曲线 x² - y² = 4 的渐近线方程是 ____。",a:"y=±x"},
+{t:"f",q:"椭圆定义中，点到两焦点距离之和等于 ____。",a:"常数"},
+{t:"f",q:"复数 −5i 的实部是 ____，虚部是 ____。",a:"0,-5"},
+{t:"f",q:"两个平面平行，则一个平面内的直线与另一平面 ____。",a:"平行"},
+{t:"f",q:"已知向量 a=(-1,4)，则 |a| = ____。",a:"√17"},
+{t:"f",q:"抛物线 y²=-4x 的焦点坐标是 ____。",a:"(-1,0)"},
+{t:"f",q:"“x>5”是“x>3”的 ____ 条件。",a:"充分不必要"},
+{t:"f",q:"双曲线 x²/16 - y²/9 = 1 的实轴长是 ____。",a:"8"},
+{t:"f",q:"复数 7+2i 在复平面中的坐标是 ____。",a:"(7,2)"},
+{t:"f",q:"椭圆 x²/36 + y²/25 = 1 的短轴长是 ____。",a:"10"},
+{t:"f",q:"空间中，过直线外一点与该直线平行的直线有 ____ 条。",a:"1"},
+
+{t:"j",q:"零向量与任意向量垂直。",a:"√"},
+{t:"j",q:"双曲线的离心率 e>1。",a:"√"},
+{t:"j",q:"椭圆的长轴一定大于短轴。",a:"√"},
+{t:"j",q:"若 p 是 q 的充要条件，则 q 也是 p 的充要条件。",a:"√"},
+{t:"j",q:"抛物线的离心率 e=1。",a:"√"},
+{t:"j",q:"向量的模一定是正数。",a:"×"},
+{t:"j",q:"到两定点距离差为常数的点的轨迹是双曲线。",a:"×"},
+{t:"j",q:"椭圆 x²/a² + y²/b² = 1(a>b) 的焦点在 y 轴。",a:"×"},
+{t:"j",q:"任意两个复数都可以比较大小。",a:"×"},
+{t:"j",q:"若 a·b=0，则 a=0 或 b=0。",a:"×"},
+{t:"j",q:"双曲线的渐近线是其一部分。",a:"×"},
+{t:"j",q:"直线与平面所成角的范围是 [0,π/2]。",a:"√"},
+{t:"j",q:"椭圆上任意一点到两焦点距离之和等于 2a。",a:"√"},
+{t:"j",q:"“a>b”是“a²>b²”的充分条件。",a:"×"},
+{t:"j",q:"抛物线上点到焦点的距离等于到准线的距离。",a:"√"},
+{t:"j",q:"零向量没有方向。",a:"×"},
+{t:"j",q:"双曲线 x²/a² - y²/b² = 1 的焦点在 x 轴。",a:"√"},
+{t:"j",q:"若 a=(1,2)，b=(2,4)，则 a∥b。",a:"√"},
+{t:"j",q:"抛物线 x²=-2y 的开口向下。",a:"√"},
+{t:"j",q:"椭圆的中心是两焦点连线的中点。",a:"√"},
+{t:"j",q:"双曲线的两支是无限延伸的。",a:"√"},
+{t:"j",q:"抛物线的焦点在其对称轴上。",a:"√"},
+{t:"j",q:"若 p 是 q 的充分不必要条件，则 q 是 p 的必要不充分条件。",a:"√"},
+{t:"j",q:"若 x₁y₂=x₂y₁，则向量 (x₁,y₁) 与 (x₂,y₂) 平行。",a:"√"},
+{t:"j",q:"抛物线 y²=4x 的准线是 x=1。",a:"×"},
+
+
+
+];
+
+/* ===== 页面逻辑 ===== */
+bank.sort(()=>Math.random()-0.5);
+let i=0, ua=[], ok=[];
+
+function render(){
+ const q=bank[i];
+ document.getElementById("progress").innerText=`第 ${i+1} 题 / 共 ${bank.length} 题`;
+ document.getElementById("question").innerText=q.q;
+ const box=document.getElementById("options");
+ box.innerHTML="";
+ document.getElementById("result").innerText="";
+
+ if(q.t==="c"||q.t==="j"){
+    const opts = q.t==="j"?["√","×"]:q.o;
+    opts.forEach(v=>{
+       const div=document.createElement("div");
+       div.className="option";
+       div.innerHTML=`<label><input type="radio" name="opt" value="${v}"> ${v}</label>`;
+       div.onclick=()=>{ 
+          div.querySelector("input").checked=true;
+          Array.from(box.children).forEach(c=>c.classList.remove("selected"));
+          div.classList.add("selected");
+       };
+       box.appendChild(div);
+    });
+ }
+ if(q.t==="f"){
+    const input = document.createElement("input");
+    input.id="fill";
+    input.style.width="100%";
+    input.style.padding="10px";
+    input.style.fontSize="16px";
+    box.appendChild(input);
+ }
+ if(ua[i]!=null) show();
+}
+
+function submitQ(){
+ const q=bank[i];
+ let v="";
+ if(q.t==="f") v=document.getElementById("fill").value.trim();
+ else{
+  const c=document.querySelector("input[name='opt']:checked");
+  if(!c) return alert("请选择答案");
+  v=c.value;
+ }
+ ua[i]=v; ok[i]=(v===q.a); show();
+}
+
+function show(){
+ document.getElementById("result").innerText=
+ ok[i]?"✔ 正确":"✘ 错误，正确答案："+bank[i].a;
+}
+
+function nextQ(){ i<bank.length-1?(i++,render()):summary(); }
+function prevQ(){ if(i>0){i--;render();} }
+
+function summary(){
+    let html = "<h2 style='padding:15px'>答题结果汇总（点击题号可回看）</h2>";
+    ok.forEach((v,idx)=>{
+        html += `<div style="padding:10px;border-bottom:1px solid #eee;cursor:pointer"
+        onclick="goToQuestion(${idx})">第 ${idx+1} 题：${v ? "✔ 正确" : "✘ 错误"}</div>`;
+    });
+    document.body.innerHTML = html;
+}
+
+function goToQuestion(index){
+    i = index;
+    document.body.innerHTML = `
+    <div class="app">
+        <div class="header" id="progress"></div>
+        <div class="content">
+            <div class="question" id="question"></div>
+            <div id="options"></div>
+            <div class="result" id="result"></div>
+        </div>
+        <div class="footer">
+            <button class="prev" onclick="prevQ()">上一题</button>
+            <button class="submit" onclick="submitQ()">提交</button>
+            <button class="next" onclick="nextQ()">下一题</button>
+        </div>
+    </div>
+    `;
+    render();
+}
+
+render();
+</script>
+</body>
+</html>
